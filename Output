@@ -1,0 +1,53 @@
+=== Initial Library Inventory ===
+
+-------------------------------------------------------------------
+ID      Title                         Author              Status
+-------------------------------------------------------------------
+1       The C++ Programming Language  Bjarne Stroustrup   Available
+2       Effective Modern C++          Scott Meyers        Available
+3       Clean Code                    Robert C. Martin    Issued
+-------------------------------------------------------------------
+
+--- Testing Add Book ---
+Book added successfully!
+
+-------------------------------------------------------------------
+ID      Title                         Author              Status
+-------------------------------------------------------------------
+1       The C++ Programming Language  Bjarne Stroustrup   Available
+2       Effective Modern C++          Scott Meyers        Available
+3       Clean Code                    Robert C. Martin    Issued
+4       Design Patterns               Erich Gamma         Available
+-------------------------------------------------------------------
+
+--- Testing Search Book ---
+--- Search Results for "C++" ---
+1       The C++ Programming Language  Bjarne Stroustrup   Available
+2       Effective Modern C++          Scott Meyers        Available
+
+--- Testing Issue Book ---
+Book "The C++ Programming Language" successfully issued.
+
+-------------------------------------------------------------------
+ID      Title                         Author              Status
+-------------------------------------------------------------------
+1       The C++ Programming Language  Bjarne Stroustrup   Issued
+2       Effective Modern C++          Scott Meyers        Available
+3       Clean Code                    Robert C. Martin    Issued
+4       Design Patterns               Erich Gamma         Available
+-------------------------------------------------------------------
+
+--- Testing Return Book ---
+Book "The C++ Programming Language" successfully returned.
+
+-------------------------------------------------------------------
+ID      Title                         Author              Status
+-------------------------------------------------------------------
+1       The C++ Programming Language  Bjarne Stroustrup   Available
+2       Effective Modern C++          Scott Meyers        Available
+3       Clean Code                    Robert C. Martin    Issued
+4       Design Patterns               Erich Gamma         Available
+-------------------------------------------------------------------
+
+--- Testing Error Handling (Issue already issued book) ---
+Caught Exception: Error: Book is already issued!
