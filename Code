@@ -1,0 +1,180 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <string>
+#include <exception>
+#include <iomanip>
+#include <algorithm>
+
+using namespace std;
+
+// Custom Exception for Library Errors
+class LibraryException : public exception {
+private:
+    string message;
+public:
+    LibraryException(string msg) : message(msg) {}
+    const char* what() const noexcept override {
+        return message.c_str();
+    }
+};
+
+class Book {
+public:
+    int id;
+    string title;
+    string author;
+    bool isAvailable;
+
+    Book(int bookId, string bookTitle, string bookAuthor, bool available = true)
+        : id(bookId), title(bookTitle), author(bookAuthor), isAvailable(available) {}
+
+    void display() const {
+        cout << left << setw(8) << id 
+             << setw(30) << title 
+             << setw(20) << author 
+             << (isAvailable ? "Available" : "Issued") << "\n";
+    }
+};
+
+class Library {
+private:
+    vector<Book> books;
+    string filename = "books.csv";
+
+    void loadFromFile() {
+        ifstream file(filename);
+        if (!file.is_open()) {
+            // Initialize with default sample books if file doesn't exist
+            books.push_back(Book(1, "The C++ Programming Language", "Bjarne Stroustrup", true));
+            books.push_back(Book(2, "Effective Modern C++", "Scott Meyers", true));
+            books.push_back(Book(3, "Clean Code", "Robert C. Martin", false));
+            saveToFile();
+            return;
+        }
+
+        books.clear();
+        string line;
+        while (getline(file, line)) {
+            stringstream ss(line);
+            string idStr, title, author, availStr;
+            if (getline(ss, idStr, ',') && getline(ss, title, ',') && 
+                getline(ss, author, ',') && getline(ss, availStr, ',')) {
+                int id = stoi(idStr);
+                bool available = (availStr == "1");
+                books.push_back(Book(id, title, author, available));
+            }
+        }
+        file.close();
+    }
+
+    void saveToFile() {
+        ofstream file(filename, ios::trunc);
+        for (const auto& book : books) {
+            file << book.id << "," << book.title << "," << book.author << "," << (book.isAvailable ? "1" : "0") << "\n";
+        }
+        file.close();
+    }
+
+public:
+    Library() {
+        loadFromFile();
+    }
+
+    void listBooks() const {
+        cout << "\n-------------------------------------------------------------------\n";
+        cout << left << setw(8) << "ID" << setw(30) << "Title" << setw(20) << "Author" << "Status\n";
+        cout << "-------------------------------------------------------------------\n";
+        for (const auto& book : books) {
+            book.display();
+        }
+        cout << "-------------------------------------------------------------------\n";
+    }
+
+    void addBook(int id, const string& title, const string& author) {
+        for (const auto& book : books) {
+            if (book.id == id) {
+                throw LibraryException("Error: Book with ID " + to_string(id) + " already exists!");
+            }
+        }
+        books.push_back(Book(id, title, author, true));
+        saveToFile();
+        cout << "Book added successfully!\n";
+    }
+
+    void searchBook(const string& keyword) const {
+        cout << "\n--- Search Results for \"" << keyword << "\" ---\n";
+        bool found = false;
+        for (const auto& book : books) {
+            if (book.title.find(keyword) != string::npos || book.author.find(keyword) != string::npos) {
+                book.display();
+                found = true;
+            }
+        }
+        if (!found) {
+            cout << "No matching books found.\n";
+        }
+    }
+
+    void issueBook(int id) {
+        for (auto& book : books) {
+            if (book.id == id) {
+                if (!book.isAvailable) {
+                    throw LibraryException("Error: Book is already issued!");
+                }
+                book.isAvailable = false;
+                saveToFile();
+                cout << "Book \"" << book.title << "\" successfully issued.\n";
+                return;
+            }
+        }
+        throw LibraryException("Error: Book ID not found!");
+    }
+
+    void returnBook(int id) {
+        for (auto& book : books) {
+            if (book.id == id) {
+                if (book.isAvailable) {
+                    throw LibraryException("Error: Book was not checked out!");
+                }
+                book.isAvailable = true;
+                saveToFile();
+                cout << "Book \"" << book.title << "\" successfully returned.\n";
+                return;
+            }
+        }
+        throw LibraryException("Error: Book ID not found!");
+    }
+};
+
+int main() {
+    try {
+        Library lib;
+        
+        cout << "=== Initial Library Inventory ===\n";
+        lib.listBooks();
+
+        cout << "\n--- Testing Add Book ---\n";
+        lib.addBook(4, "Design Patterns", "Erich Gamma");
+        lib.listBooks();
+
+        cout << "\n--- Testing Search Book ---\n";
+        lib.searchBook("C++");
+
+        cout << "\n--- Testing Issue Book ---\n";
+        lib.issueBook(1);
+        lib.listBooks();
+
+        cout << "\n--- Testing Return Book ---\n";
+        lib.returnBook(1);
+        lib.listBooks();
+
+        cout << "\n--- Testing Error Handling (Issue already issued book) ---\n";
+        lib.issueBook(3); // Book 3 is already issued in initial setup
+    } catch (const exception& e) {
+        cout << "Caught Exception: " << e.what() << "\n";
+    }
+
+    return 0;
+}
